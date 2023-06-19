@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  WidgetsApp.debugAllowBannerOverride= false;
-  runApp(MyApp());
+  WidgetsApp.debugAllowBannerOverride = false;
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade900),
         ),
-        home: MyHomePage(),
+        home: SplashScreen(),
       ),
     );
   }
@@ -28,15 +30,12 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
+  var favorites = <WordPair>[];
 
-  // ↓ Add this.
   void getNext() {
     current = WordPair.random();
     notifyListeners();
   }
-
-  // ↓ Agregue el código a continuación.
-  var favorites = <WordPair>[];
 
   void toggleFavorite() {
     if (favorites.contains(current)) {
@@ -47,8 +46,62 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 }
-/////////////////////////////////////////////////////////
-// ...
+
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
+
+    _animation = Tween<double>(begin: 0, end: 100).animate(_animationController)
+      ..addListener(() {
+        setState(() {});
+      });
+
+    _animationController.forward();
+
+    Timer(const Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyHomePage()),
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(value: _animation.value / 100),
+            const SizedBox(height: 20),
+            Text('Loading... ${_animation.value.toInt()}%'),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -56,65 +109,58 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var selectedIndex = 0; // ← Añadir esta propiedad
+  var selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    // ...
-
     Widget page;
     switch (selectedIndex) {
       case 0:
         page = GeneratorPage();
         break;
       case 1:
-        page = FavoritesPage(); //Reemplazo del PlaceHolder con Favorites Page9
+        page = FavoritesPage();
         break;
-        case 2:
+      case 2:
         page = SettingsPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
 
-// ...
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
         body: Row(
           children: [
             SafeArea(
               child: NavigationRail(
-                extended: constraints.maxWidth >=
-                    600, // ← Aqui abre y cierra el menu Pag7
-                /* extended: false, */
+                extended: constraints.maxWidth >= 600,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('Home'),
+                    icon: const Icon(Icons.home),
+                    label: const Text('Home'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
-                    label: Text('Favorites'),
+                    icon: const Icon(Icons.favorite),
+                    label: const Text('Favorites'),
                   ),
-                    NavigationRailDestination(
-                    icon: Icon(Icons.settings),
-                    label: Text('Settings'),
+                  NavigationRailDestination(
+                    icon: const Icon(Icons.settings),
+                    label: const Text('Settings'),
                   ),
                 ],
-                selectedIndex: selectedIndex, // ← Change to this.
-                /* selectedIndex: 0, */
+                selectedIndex: selectedIndex,
                 onDestinationSelected: (value) {
-                  // ↓ Replace print with this.
                   setState(() {
                     selectedIndex = value;
                   });
-                  /* print('selected: $value'); */
                 },
               ),
             ),
             Expanded(
               child: Container(
                 color: Theme.of(context).colorScheme.primaryContainer,
-                child: page, //aqui
+                child: page,
               ),
             ),
           ],
@@ -124,7 +170,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-/////////////////////////////////////////////////////////////////////////////
 class GeneratorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -143,7 +188,7 @@ class GeneratorPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           BigCard(pair: pair),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -152,14 +197,14 @@ class GeneratorPage extends StatelessWidget {
                   appState.toggleFavorite();
                 },
                 icon: Icon(icon),
-                label: Text('Like'),
+                label: const Text('Like'),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
                   appState.getNext();
                 },
-                child: Text('Next'),
+                child: const Text('Next'),
               ),
             ],
           ),
@@ -169,49 +214,34 @@ class GeneratorPage extends StatelessWidget {
   }
 }
 
-// ...
-/////////////////////////////////////////////////////////
 class BigCard extends StatelessWidget {
   const BigCard({
-    super.key,
+    Key? key,
     required this.pair,
-  });
+  }) : super(key: key);
 
   final WordPair pair;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // ← Add this.
-
-    // ↓ Add this.
-    final style = theme.textTheme.displayMedium!.copyWith(
+    final theme = Theme.of(context);
+    final style = theme.textTheme.headline6!.copyWith(
       color: theme.colorScheme.onPrimary,
     );
 
     return Card(
-      color: theme.colorScheme.primary, // ← Y también esta.
+      color: theme.colorScheme.primary,
       child: Padding(
         padding: const EdgeInsets.all(20),
-
-        // ↓ Realiza el siguiente cambio. 001
         child: Text(
           pair.asLowerCase,
           style: style,
           semanticsLabel: "${pair.first} ${pair.second}",
         ),
-        ////////
-        // ↓ Cambiar esta linea 01
-        /* child: Text(pair.asLowerCase, style: style) */
-
-        /////////////////////////////////
-        //Primera linea 0
-        /* child: Text(pair.asLowerCase), */
       ),
     );
   }
 }
-
-// ...
 
 class FavoritesPage extends StatelessWidget {
   @override
@@ -220,7 +250,7 @@ class FavoritesPage extends StatelessWidget {
 
     if (appState.favorites.isEmpty) {
       return Center(
-        child: Text('No favorites yet.'),
+        child: const Text('No favorites yet.'),
       );
     }
 
@@ -228,12 +258,11 @@ class FavoritesPage extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(20),
-          child: Text('You have '
-              '${appState.favorites.length} favorites:'),
+          child: Text('You have ${appState.favorites.length} favorites:'),
         ),
         for (var pair in appState.favorites)
           ListTile(
-            leading: Icon(Icons.favorite),
+            leading: const Icon(Icons.favorite),
             title: Text(pair.asLowerCase),
           ),
       ],
@@ -241,41 +270,37 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
-//////////////////////////////////////////
-
 class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Página de Ajustes'),
-          SizedBox(height: 100),
+          const Text('Página de Ajustes'),
+          const SizedBox(height: 100),
           Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-          ElevatedButton.icon(
-            onPressed: () {
-              // Lógica del botón
-            },
-            icon: Icon(Icons.app_settings_alt_sharp),
-            label: Text('Ajustes'),
-          ),
-          SizedBox(width: 10,),
-          ElevatedButton.icon(
-            onPressed: () {
-              // Lógica del botón
-            },
-            icon: Icon(Icons.app_shortcut_sharp),
-            label: Text('Personalizacion'),
-          ),
-          ],
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  // Lógica del botón
+                },
+                icon: const Icon(Icons.app_settings_alt_sharp),
+                label: const Text('Ajustes'),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton.icon(
+                onPressed: () {
+                  // Lógica del botón
+                },
+                icon: const Icon(Icons.app_shortcut_sharp),
+                label: const Text('Personalizacion'),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 }
-
