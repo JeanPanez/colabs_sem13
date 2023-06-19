@@ -1,10 +1,9 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/services.dart';
 
 void main() {
+  WidgetsApp.debugAllowBannerOverride= false;
   runApp(MyApp());
 }
 
@@ -19,7 +18,7 @@ class MyApp extends StatelessWidget {
         title: 'Namer App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade900),
         ),
         home: MyHomePage(),
       ),
@@ -68,7 +67,10 @@ class _MyHomePageState extends State<MyHomePage> {
         page = GeneratorPage();
         break;
       case 1:
-        page = FavoritesPage(); //Reemplazo del PlaceHolder con FavoritesPage
+        page = FavoritesPage(); //Reemplazo del PlaceHolder con Favorites Page9
+        break;
+        case 2:
+        page = SettingsPage();
         break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
@@ -92,6 +94,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                     icon: Icon(Icons.favorite),
                     label: Text('Favorites'),
+                  ),
+                    NavigationRailDestination(
+                    icon: Icon(Icons.settings),
+                    label: Text('Settings'),
                   ),
                 ],
                 selectedIndex: selectedIndex, // ← Change to this.
@@ -234,3 +240,42 @@ class FavoritesPage extends StatelessWidget {
     );
   }
 }
+
+//////////////////////////////////////////
+
+class SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('Página de Ajustes'),
+          SizedBox(height: 100),
+          Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+          ElevatedButton.icon(
+            onPressed: () {
+              // Lógica del botón
+            },
+            icon: Icon(Icons.app_settings_alt_sharp),
+            label: Text('Ajustes'),
+          ),
+          SizedBox(width: 10,),
+          ElevatedButton.icon(
+            onPressed: () {
+              // Lógica del botón
+            },
+            icon: Icon(Icons.app_shortcut_sharp),
+            label: Text('Personalizacion'),
+          ),
+          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
